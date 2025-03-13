@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LibraryAutomation.Core\LibraryAutomation.Core.csproj" />
+    <ProjectReference Include="..\LibraryAutomation.DAL\LibraryAutomation.DAL.csproj" />
+  </ItemGroup>
+
 </Project>

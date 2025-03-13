@@ -1,6 +1,12 @@
+using LibraryAutomation.DAL.Contexts;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<LibraryAutomationDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("MySQLConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySQLConnection"))));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

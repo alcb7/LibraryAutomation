@@ -1,4 +1,4 @@
-﻿namespace LibraryAutomation.DAL
+﻿namespace LibraryAutomation.Core
 {
     public class Class1
     {
