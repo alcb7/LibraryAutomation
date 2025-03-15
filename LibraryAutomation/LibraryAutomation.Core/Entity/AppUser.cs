@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibraryAutomation.Core
+namespace LibraryAutomation.Core.Entity
 {
     public class AppUser : IdentityUser
     {
         // Ek özellikler buraya eklenebilir
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        // Diğer özellikler...
+        public bool IsApproved { get; set; }
     }
 }

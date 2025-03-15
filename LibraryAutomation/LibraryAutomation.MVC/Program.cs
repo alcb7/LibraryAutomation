@@ -3,6 +3,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// HttpClient servisini ekliyoruz: "LibraryApi"
+builder.Services.AddHttpClient("LibraryApi", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7009/api/"); // API'nin base URL'si
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

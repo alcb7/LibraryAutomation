@@ -1,0 +1,15 @@
+﻿using LibraryAutomation.Core.Entity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LibraryAutomation.DAL.Interfaces
+{
+    public interface IRentalRepository : IRepository<Rental>
+    {
+        // Kiralama entity'sine özel metodlar
+        Task<List<Rental>> GetRentalsByUserIdAsync(string userId);
+    }
+}
