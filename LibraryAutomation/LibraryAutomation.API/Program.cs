@@ -14,7 +14,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
 
+    // Veritabanýný oluþtur
+    var dbContext = services.GetRequiredService<LibraryAutomationDbContext>();
+    dbContext.Database.EnsureDeleted();
+
+    dbContext.Database.EnsureCreated();
+
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
