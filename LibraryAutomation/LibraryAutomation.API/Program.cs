@@ -5,6 +5,7 @@ using LibraryAutomation.Core.Seed;
 using LibraryAutomation.DAL.Contexts;
 using LibraryAutomation.DAL.Interfaces;
 using LibraryAutomation.DAL.Repositories;
+using LibraryAutomation.DAL.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Generic Repository'yi DI container'a ekleme
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Entity-specific Repository'leri DI container'a ekleme
 builder.Services.AddScoped<IBookRepository, BookRepository>();
@@ -90,6 +92,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    await DatabaseSeeder.SeedAsync(services);
     await RoleSeeder.SeedRolesAndAdminUserAsync(services);
 
     // Veritabanýný oluþtur

@@ -1,0 +1,106 @@
+﻿@using LibraryAutomation.MVC.Models.ViewModels
+@model LibrarianDashboardViewModel
+
+@{
+    ViewData["Title"] = "Kütüphane Yönetimi";
+}
+
+<h2>Kütüphane Yönetimi</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.Error))
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-success">@ViewBag.Success</div>
+}
+
+<!-- 📌 Kitap Listesi -->
+<h3>Kitaplar</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Kitap Adı</th>
+            <th>Yazar</th>
+            <th>Yayın Yılı</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Books != null && Model.Books.Any())
+        {
+            int count = 1;
+            @foreach (var book in Model.Books)
+            {
+                <tr>
+                    <td>@count</td>
+                    <td>@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@(book.PublicationYear?.ToString() ?? "Bilinmiyor")</td>
+                    <td>@book.Status</td>
+                    <td>
+                        <form method="post" asp-action="DeleteBook" asp-controller="Librarian" onsubmit="return confirm('Bu kitabı silmek istediğinize emin misiniz?');">
+                            <input type="hidden" name="bookId" value="@book.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                        </form>
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">📌 Henüz kayıtlı kitap yok.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="CreateBook" asp-controller="Librarian" class="btn btn-primary mb-3">📌 Yeni Kitap Ekle</a>
+
+<hr />
+
+<!-- 📌 Kullanıcı Listesi -->
+<h3>Kullanıcılar</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Users != null && Model.Users.Any())
+        {
+            int count = 1;
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@count</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.LastName</td>
+                    <td>@user.Email</td>
+                    <td>@string.Join(", ", user.Roles ?? new List<string>())</td>
+                    <td>
+                        <a asp-action="UserRentals" asp-controller="Librarian" asp-route-userId="@user.Id" class="btn btn-info btn-sm">Kiraladığı Kitaplar</a>
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">📌 Henüz kayıtlı kullanıcı yok.</td>
+            </tr>
+        }
+    </tbody>
+</table>

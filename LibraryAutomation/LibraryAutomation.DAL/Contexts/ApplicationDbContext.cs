@@ -27,8 +27,7 @@ namespace LibraryAutomation.DAL.Contexts
                 entity.HasKey(b => b.Id);
                 entity.Property(b => b.Title)
                       .IsRequired();
-                entity.Property(b => b.ISBN)
-                      .IsRequired();
+                
             });
 
             // BookRental entity ayarları

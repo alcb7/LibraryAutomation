@@ -1,0 +1,65 @@
+﻿@model LibraryAutomation.MVC.Models.ViewModels.UserDashboardViewModel
+
+@{
+    ViewData["Title"] = "Kitap Listesi";
+}
+
+<h2>Mevcut Kitaplar</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-success">@ViewBag.Success</div>
+}
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Kitap Adı</th>
+            <th>Yazar</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.AvailableBooks.Any())
+        {
+            int count = 1;
+            @foreach (var book in Model.AvailableBooks)
+            {
+                <tr>
+                    <td>@count</td>
+                    <td>@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@book.Status</td>
+                    <td>
+                        @if (book.Status.ToString() == "Available")
+                        {
+                            <form method="post" asp-action="RentBook" asp-controller="User">
+                                <input type="hidden" name="bookId" value="@book.Id" />
+                                <button type="submit" class="btn btn-primary btn-sm">Kirala</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary btn-sm" disabled>Kiralanmış</button>
+                        }
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">Mevcut kitap bulunmamaktadır.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="MyRentals" asp-controller="User" class="btn btn-info">Kiraladığım Kitaplar</a>

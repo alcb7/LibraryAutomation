@@ -20,6 +20,26 @@ namespace LibraryAutomation.DAL.Repositories
         {
             return await _context.Rentals
                 .Where(r => r.UserId == userId)
+                .Include(r => r.Book)  // 🔹 Kitap bilgilerini de çek
+                .Include(r => r.User)  // 🔹 Kullanıcı bilgilerini de çek
+                .ToListAsync();
+        }
+
+
+        public async Task<List<Rental>> GetRentalHistoryByBookIdAsync(int bookId)
+        {
+            return await _context.Rentals
+                .Where(r => r.BookId == bookId)
+                .Include(r => r.Book)  // 🔹 Kitap bilgilerini de çek
+                .Include(r => r.User)  // 🔹 Kullanıcı bilgilerini de çek
+                .ToListAsync();
+        }
+        public async Task<List<Rental>> GetRentalsWithBooksAsync(string userId)
+        {
+            return await _context.Rentals
+                .Include(r => r.Book)  // Kitap bilgilerini getir
+                .Include(r => r.User)  // Kullanıcı bilgilerini getir
+                .Where(r => r.UserId == userId)
                 .ToListAsync();
         }
     }

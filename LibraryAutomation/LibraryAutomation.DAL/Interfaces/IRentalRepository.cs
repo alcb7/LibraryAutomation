@@ -11,5 +11,7 @@ namespace LibraryAutomation.DAL.Interfaces
     {
         // Kiralama entity'sine özel metodlar
         Task<List<Rental>> GetRentalsByUserIdAsync(string userId);
+        Task<List<Rental>> GetRentalHistoryByBookIdAsync(int bookId);
+        Task<List<Rental>> GetRentalsWithBooksAsync(string userId);
     }
 }

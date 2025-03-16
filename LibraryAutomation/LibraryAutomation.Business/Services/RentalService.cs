@@ -11,41 +11,48 @@ namespace LibraryAutomation.Business.Services
 {
     public class RentalService : IRentalService
     {
-        private readonly IRentalRepository _rentalRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public RentalService(IRentalRepository rentalRepository)
+        public RentalService(IUnitOfWork unitOfWork)
         {
-            _rentalRepository = rentalRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<Rental>> GetAllRentalsAsync()
         {
-            return await _rentalRepository.GetAllAsync();
+            return await _unitOfWork.Rentals.GetAllAsync();
         }
 
         public async Task<Rental> GetRentalByIdAsync(int id)
         {
-            return await _rentalRepository.GetByIdAsync(id);
+            return await _unitOfWork.Rentals.GetByIdAsync(id);
         }
 
         public async Task AddRentalAsync(Rental rental)
         {
-            await _rentalRepository.AddAsync(rental);
+            await _unitOfWork.Rentals.AddAsync(rental);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task UpdateRentalAsync(Rental rental)
         {
-            await _rentalRepository.UpdateAsync(rental);
+            await _unitOfWork.Rentals.UpdateAsync(rental);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteRentalAsync(int id)
         {
-            await _rentalRepository.DeleteAsync(id);
+            await _unitOfWork.Rentals.DeleteAsync(id);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task<List<Rental>> GetRentalsByUserIdAsync(string userId)
         {
-            return await _rentalRepository.GetRentalsByUserIdAsync(userId);
+            return await _unitOfWork.Rentals.GetRentalsByUserIdAsync(userId);
+        }
+        public async Task<List<Rental>> GetRentalHistoryByBookIdAsync(int bookId)
+        {
+            return await _unitOfWork.Rentals.GetRentalHistoryByBookIdAsync(bookId);
         }
     }
 }

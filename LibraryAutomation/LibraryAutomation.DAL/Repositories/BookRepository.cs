@@ -22,5 +22,13 @@ namespace LibraryAutomation.DAL.Repositories
                 .Where(b => b.Author == author)
                 .ToListAsync();
         }
+        public async Task<List<Rental>> GetRentalHistoryByBookIdAsync(int bookId)
+        {
+            return await _context.Rentals
+                .Include(r => r.Book)
+                .Include(r => r.User)
+                .Where(r => r.BookId == bookId)
+                .ToListAsync();
+        }
     }
 }

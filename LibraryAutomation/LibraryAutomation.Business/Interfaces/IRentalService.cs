@@ -15,5 +15,6 @@ namespace LibraryAutomation.Business.Interfaces
         Task UpdateRentalAsync(Rental rental);
         Task DeleteRentalAsync(int id);
         Task<List<Rental>> GetRentalsByUserIdAsync(string userId);
+        Task<List<Rental>> GetRentalHistoryByBookIdAsync(int bookId);
     }
 }

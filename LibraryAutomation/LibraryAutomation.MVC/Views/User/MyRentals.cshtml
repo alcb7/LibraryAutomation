@@ -1,0 +1,34 @@
+﻿@model List<LibraryAutomation.MVC.Models.ViewModels.RentalViewModel>
+
+@{
+    ViewData["Title"] = "Kiraladığım Kitaplar";
+}
+
+<h2>Kiraladığım Kitaplar</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Kitap Adı</th>
+            <th>Kiralama Tarihi</th>
+            <th>Son Teslim Tarihi</th>
+            <th>İade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rental in Model)
+        {
+            <tr>
+                <td>@rental.BookTitle</td>
+                <td>@rental.RentalDate</td>
+                <td>@rental.DueDate</td>
+                <td>
+                    <form method="post" asp-action="ReturnBook" asp-controller="User">
+                        <input type="hidden" name="rentalId" value="@rental.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">İade Et</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

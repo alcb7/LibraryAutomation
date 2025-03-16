@@ -1,0 +1,45 @@
+﻿@using LibraryAutomation.MVC.Models.ViewModels
+@model CreateBookViewModel
+
+@{
+    ViewData["Title"] = "Yeni Kitap Ekle";
+}
+
+<h2>Yeni Kitap Ekle</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form asp-action="CreateBook" asp-controller="Librarian" method="post">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Kitap Adı</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Author" class="form-label">Yazar</label>
+        <input asp-for="Author" class="form-control" />
+        <span asp-validation-for="Author" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PublicationYear" class="form-label">Yayın Yılı</label>
+        <input asp-for="PublicationYear" type="number" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Publisher" class="form-label">Yayıncı</label>
+        <input asp-for="Publisher" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Açıklama</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">Ekle</button>
+    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+</form>

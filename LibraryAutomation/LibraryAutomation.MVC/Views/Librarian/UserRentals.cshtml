@@ -1,0 +1,50 @@
+﻿@using LibraryAutomation.MVC.Models.ViewModels
+@model List<RentalHistoryViewModel>
+
+@{
+    ViewData["Title"] = "Kullanıcının Kiraladığı Kitaplar";
+}
+
+<h2>Kullanıcının Kiraladığı Kitaplar</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Kitap Adı</th>
+            <th>Kiralama Tarihi</th>
+            <th>Son Teslim Tarihi</th>
+            <th>İade Tarihi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int count = 1;
+            @foreach (var rental in Model)
+            {
+                <tr>
+                    <td>@count</td>
+                    <td>@rental.BookTitle</td>
+                    <td>@rental.RentalDate.ToString("dd/MM/yyyy")</td>
+                    <td>@(rental.DueDate?.ToString("dd/MM/yyyy") ?? "Belirtilmedi")</td>
+                    <td>@(rental.ReturnDate?.ToString("dd/MM/yyyy") ?? "Henüz İade Edilmedi")</td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">Bu kullanıcı henüz kitap kiralamamış.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Users" class="btn btn-secondary">Geri Dön</a>
