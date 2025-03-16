@@ -1,11 +1,12 @@
 ﻿using LibraryAutomation.MVC.Models.ViewModels;
+using LibraryAutomation.MVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
 
 namespace LibraryAutomation.MVC.Controllers
 {
-    [Route("[controller]")]
-    [Authorize(Roles = "Admin")] // Sadece Admin erişebilir
+    [Authorize(Roles = "Admin")] // Sadece Admin kullanıcılar erişebilir
     public class AdminController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
@@ -14,36 +15,39 @@ namespace LibraryAutomation.MVC.Controllers
         {
             _httpClientFactory = httpClientFactory;
         }
-
-        // Kullanıcıları listele
-        [HttpGet("users")]
-        public async Task<IActionResult> Users()
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
             var client = _httpClientFactory.CreateClient("LibraryApi");
+
+            // Session’dan token'ı al
+            var token = HttpContext.Session.GetString("Token");
+            Console.WriteLine("📌 Session’dan Okunan Token: " + (token ?? "YOK!"));
+
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("❌ HATA: Session’dan Token okunamadı!");
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // **Token'in başına 'Bearer ' eklediğimizden emin olalım!**
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Replace("Bearer ", ""));
+
+            Console.WriteLine("📌 API'ye Gönderilen Authorization Header: " + client.DefaultRequestHeaders.Authorization);
+
             var response = await client.GetAsync("admin/users");
+
+            Console.WriteLine("📌 API Yanıt Kodu: " + response.StatusCode);
 
             if (!response.IsSuccessStatusCode)
             {
-                return View("Error", new { Message = "Kullanıcıları getirme başarısız." });
+                Console.WriteLine("❌ API yetkilendirme hatası! StatusCode: " + response.StatusCode);
+                return View("Error", new ErrorViewModel { Message = "Yetkilendirme hatası: API'den kullanıcı listesi alınamadı." });
             }
 
             var users = await response.Content.ReadFromJsonAsync<List<UserViewModel>>();
             return View(users);
         }
 
-        // Kullanıcıyı onayla
-        [HttpPost("approve/{userId}")]
-        public async Task<IActionResult> ApproveUser(string userId)
-        {
-            var client = _httpClientFactory.CreateClient("LibraryApi");
-            var response = await client.PostAsync($"admin/approve-user/{userId}", null);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                ViewBag.Error = "Onay işlemi başarısız.";
-            }
-
-            return RedirectToAction("Users");
-        }
     }
 }

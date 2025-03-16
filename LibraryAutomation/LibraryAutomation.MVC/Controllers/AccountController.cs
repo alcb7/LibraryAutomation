@@ -4,6 +4,8 @@ using System.Text;
 using LibraryAutomation.MVC.Models.ViewModels;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace LibraryAutomation.MVC.Controllers
 {
@@ -26,39 +28,49 @@ namespace LibraryAutomation.MVC.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.PostAsJsonAsync("https://localhost:7009/api/account/login", model);
+            var client = _httpClientFactory.CreateClient("LibraryApi");
+
+            Console.WriteLine("📌 API'ye Login isteği gönderiliyor: " + model.Email);
+            var response = await client.PostAsJsonAsync("account/login", model);
+            Console.WriteLine("📌 API Login Yanıt Kodu: " + response.StatusCode);
 
             if (!response.IsSuccessStatusCode)
             {
                 ViewBag.Error = "Giriş başarısız, lütfen bilgilerinizi kontrol edin.";
+                Console.WriteLine("❌ API Login Başarısız! StatusCode: " + response.StatusCode);
                 return View();
             }
 
             var result = await response.Content.ReadFromJsonAsync<JwtResponseDto>();
+            Console.WriteLine("📌 Alınan Token: " + result.Token);
 
-            // Token'ı sakla
-            HttpContext.Session.SetString("Token", result.Token);
+            // ✅ **Token'ı Cookie olarak kaydediyoruz**
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, model.Email),
+            new Claim(ClaimTypes.Name, model.Email),
+            new Claim(ClaimTypes.Role, "Admin") // **Burada API'den dönen gerçek rolü alabilirsin**
+        };
 
-            // Token'ı çözümleyerek rolü al
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.ReadJwtToken(result.Token);
-            var role = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true
+            };
 
-            // Kullanıcıyı rolüne göre yönlendir
-            if (role == "Admin")
-            {
-                return RedirectToAction("Index", "Admin");
-            }
-            else if (role == "Kütüphane Görevlisi")
-            {
-                return RedirectToAction("Dashboard", "Librarian");
-            }
-            else
-            {
-                return RedirectToAction("Home", "User");
-            }
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
+
+            Console.WriteLine("✅ Kullanıcı Yetkilendirildi ve Cookie Kaydedildi!");
+
+            return RedirectToAction("Index", "Admin");
         }
+
+
+
         [HttpGet("register")]
         public IActionResult Register()
         {
