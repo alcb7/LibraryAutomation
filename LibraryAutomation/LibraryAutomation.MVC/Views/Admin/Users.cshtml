@@ -1,0 +1,50 @@
+﻿@using LibraryAutomation.MVC.Models.ViewModels
+@model List<UserViewModel>
+
+<h2>Kullanıcı Listesi</h2>
+
+@if (ViewBag.Error != null)
+{
+    <p style="color: red">@ViewBag.Error</p>
+}
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Email</th>
+            <th>Onay Durumu</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FirstName</td>
+                <td>@user.LastName</td>
+                <td>@user.Email</td>
+                <td>
+                    @if (user.IsApproved)
+                    {
+                        <span style="color: green;">Onaylandı</span>
+                    }
+                    else
+                    {
+                        <span style="color: red;">Onay Bekliyor</span>
+                    }
+                </td>
+                <td>
+                    @if (!user.IsApproved)
+                    {
+                        <form method="post" action="/Admin/Approve/@user.Id">
+                            <button type="submit">Onayla</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

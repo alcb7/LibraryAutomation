@@ -9,7 +9,7 @@ namespace LibraryAutomation.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = Roles.Admin)]
+   [Authorize(Roles = Roles.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
@@ -23,18 +23,27 @@ namespace LibraryAutomation.API.Controllers
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _userManager.Users.Select(u => new
-            {
-                u.Id,
-                u.Email,
-                u.FirstName,
-                u.LastName,
-                u.IsApproved,
-                Roles = _userManager.GetRolesAsync(u).Result
-            }).ToListAsync();
+            var users = await _userManager.Users.ToListAsync(); // Kullanıcıları çek
 
-            return Ok(users);
+            var userList = new List<object>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user); // Kullanıcının rollerini çek
+                userList.Add(new
+                {
+                    user.Id,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    user.IsApproved,
+                    Roles = roles
+                });
+            }
+
+            return Ok(userList);
         }
+
 
         // Kullanıcıyı onayla (IsApproved = true yap)
         [HttpPost("approve-user/{userId}")]

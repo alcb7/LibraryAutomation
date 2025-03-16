@@ -2,79 +2,90 @@
 using System.Text.Json;
 using System.Text;
 using LibraryAutomation.MVC.Models.ViewModels;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace LibraryAutomation.MVC.Controllers
 {
+    [Route("[controller]")]
     public class AccountController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public AccountController(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClientFactory.CreateClient("LibraryApi");
+            _httpClientFactory = httpClientFactory;
         }
 
-        [HttpGet]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var json = JsonSerializer.Serialize(model);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync("account/register", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return RedirectToAction("Login");
-                }
-
-                ModelState.AddModelError(string.Empty, "Kayıt işlemi başarısız.");
-            }
-
-            return View(model);
-        }
-
-        [HttpGet]
+        [HttpGet("login")]
         public IActionResult Login()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.PostAsJsonAsync("https://localhost:7009/api/account/login", model);
+
+            if (!response.IsSuccessStatusCode)
             {
-                var json = JsonSerializer.Serialize(model);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync("account/login", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var token = await response.Content.ReadAsStringAsync();
-                    // Token'ı cookie veya session'da saklayabilirsiniz.
-                    return RedirectToAction("Index", "Home");
-                }
-
-                ModelState.AddModelError(string.Empty, "Geçersiz giriş denemesi.");
+                ViewBag.Error = "Giriş başarısız, lütfen bilgilerinizi kontrol edin.";
+                return View();
             }
 
-            return View(model);
+            var result = await response.Content.ReadFromJsonAsync<JwtResponseDto>();
+
+            // Token'ı sakla
+            HttpContext.Session.SetString("Token", result.Token);
+
+            // Token'ı çözümleyerek rolü al
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(result.Token);
+            var role = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            // Kullanıcıyı rolüne göre yönlendir
+            if (role == "Admin")
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+            else if (role == "Kütüphane Görevlisi")
+            {
+                return RedirectToAction("Dashboard", "Librarian");
+            }
+            else
+            {
+                return RedirectToAction("Home", "User");
+            }
+        }
+        [HttpGet("register")]
+        public IActionResult Register()
+        {
+            return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Logout()
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            await _httpClient.PostAsync("account/logout", null);
-            return RedirectToAction("Index", "Home");
+            if (model.Password != model.ConfirmPassword)
+            {
+                ViewBag.Error = "Şifreler eşleşmiyor.";
+                return View();
+            }
+
+            var client = _httpClientFactory.CreateClient("LibraryApi"); // Merkezi tanımlanan HTTP istemciyi kullan
+            var response = await client.PostAsJsonAsync("account/register", model); // API'ye kayıt isteği gönder
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ViewBag.Error = "Kayıt başarısız, lütfen bilgilerinizi kontrol edin.";
+                return View();
+            }
+
+            ViewBag.Success = "Kayıt başarılı, giriş yapabilirsiniz!";
+            return RedirectToAction("Login");
         }
     }
+
 }
