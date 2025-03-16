@@ -1,1 +1,73 @@
-﻿
+﻿@model List<LibraryAutomation.MVC.Models.ViewModels.UserViewModel>
+
+@{
+    ViewData["Title"] = "Kullanıcı Listesi";
+}
+
+<h2>Kullanıcı Listesi</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-success">@ViewBag.Success</div>
+}
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Onay Durumu</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int count = 1;
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@count</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.LastName</td>
+                    <td>@user.Email</td>
+                    <td>@string.Join(", ", user.Roles)</td>
+                    <td>
+                        @if (user.IsApproved)
+                        {
+                            <span class="badge bg-success">Onaylı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Onay Bekliyor</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!user.IsApproved)
+                        {
+                            <form method="post" asp-action="ApproveUser" asp-controller="Admin">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Onayla</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center">Henüz kayıtlı kullanıcı yok.</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -20,34 +20,41 @@ namespace LibraryAutomation.MVC.Controllers
         {
             var client = _httpClientFactory.CreateClient("LibraryApi");
 
-            // Session’dan token'ı al
+            // ✅ **Session’dan Token’ı Al**
             var token = HttpContext.Session.GetString("Token");
             Console.WriteLine("📌 Session’dan Okunan Token: " + (token ?? "YOK!"));
 
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("❌ HATA: Session’dan Token okunamadı!");
-                return RedirectToAction("Login", "Auth");
+                Console.WriteLine("❌ HATA: Token bulunamadı, giriş sayfasına yönlendiriliyor.");
+                return RedirectToAction("Login", "Account");
             }
 
-            // **Token'in başına 'Bearer ' eklediğimizden emin olalım!**
+            // ✅ **API’ye gönderilen Token’ı doğru formatta gönderelim**
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Replace("Bearer ", ""));
 
             Console.WriteLine("📌 API'ye Gönderilen Authorization Header: " + client.DefaultRequestHeaders.Authorization);
 
+            // ✅ API’ye İstek Yap
             var response = await client.GetAsync("admin/users");
 
-            Console.WriteLine("📌 API Yanıt Kodu: " + response.StatusCode);
-
+            // ❌ **API Hata Verirse Log Yazalım**
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine("❌ API yetkilendirme hatası! StatusCode: " + response.StatusCode);
-                return View("Error", new ErrorViewModel { Message = "Yetkilendirme hatası: API'den kullanıcı listesi alınamadı." });
+                string errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ API Hatası: {response.StatusCode} - {errorMessage}");
+
+                ViewBag.Error = $"API Hatası: {response.StatusCode} - {errorMessage}";
+                return View(new List<UserViewModel>()); // **Boş liste gönderiyoruz**
             }
 
+            // ✅ Kullanıcı listesini al
             var users = await response.Content.ReadFromJsonAsync<List<UserViewModel>>();
             return View(users);
         }
+       
+
+
 
     }
 }

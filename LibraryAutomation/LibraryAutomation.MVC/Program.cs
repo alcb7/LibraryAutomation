@@ -5,14 +5,12 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ appsettings.json'dan JWT ayarlarını alalım
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
-// ✅ Authentication & Authorization Yapılandırması (Cookie + JWT)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Auth/Login";
+        options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Auth/AccessDenied";
     })
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>

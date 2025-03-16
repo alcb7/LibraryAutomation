@@ -6,96 +6,71 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using Newtonsoft.Json;
 
 namespace LibraryAutomation.MVC.Controllers
 {
-    [Route("[controller]")]
     public class AccountController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
-        public AccountController(IHttpClientFactory httpClientFactory)
+        public AccountController(HttpClient httpClient)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClient;
+            _httpClient.BaseAddress = new Uri("https://localhost:7009/api/"); // API URL
         }
 
-        [HttpGet("login")]
         public IActionResult Login()
         {
             return View();
         }
 
-        [HttpPost("login")]
+        [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var client = _httpClientFactory.CreateClient("LibraryApi");
+            if (!ModelState.IsValid)
+                return View(model);
 
-            Console.WriteLine("📌 API'ye Login isteği gönderiliyor: " + model.Email);
-            var response = await client.PostAsJsonAsync("account/login", model);
-            Console.WriteLine("📌 API Login Yanıt Kodu: " + response.StatusCode);
+            var jsonContent = JsonConvert.SerializeObject(model);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            if (!response.IsSuccessStatusCode)
-            {
-                ViewBag.Error = "Giriş başarısız, lütfen bilgilerinizi kontrol edin.";
-                Console.WriteLine("❌ API Login Başarısız! StatusCode: " + response.StatusCode);
-                return View();
-            }
-
-            var result = await response.Content.ReadFromJsonAsync<JwtResponseDto>();
-            Console.WriteLine("📌 Alınan Token: " + result.Token);
-
-            // ✅ **Token'ı Cookie olarak kaydediyoruz**
-            var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, model.Email),
-            new Claim(ClaimTypes.Name, model.Email),
-            new Claim(ClaimTypes.Role, "Admin") // **Burada API'den dönen gerçek rolü alabilirsin**
-        };
-
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true
-            };
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity),
-                authProperties
-            );
-
-            Console.WriteLine("✅ Kullanıcı Yetkilendirildi ve Cookie Kaydedildi!");
-
-            return RedirectToAction("Index", "Admin");
-        }
-
-
-
-        [HttpGet("register")]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (model.Password != model.ConfirmPassword)
-            {
-                ViewBag.Error = "Şifreler eşleşmiyor.";
-                return View();
-            }
-
-            var client = _httpClientFactory.CreateClient("LibraryApi"); // Merkezi tanımlanan HTTP istemciyi kullan
-            var response = await client.PostAsJsonAsync("account/register", model); // API'ye kayıt isteği gönder
+            var response = await _httpClient.PostAsync("Account/login", content);
 
             if (!response.IsSuccessStatusCode)
             {
-                ViewBag.Error = "Kayıt başarısız, lütfen bilgilerinizi kontrol edin.";
-                return View();
+                ModelState.AddModelError("", "Geçersiz giriş bilgileri.");
+                return View(model);
             }
 
-            ViewBag.Success = "Kayıt başarılı, giriş yapabilirsiniz!";
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // **Gelen yanıtın boş olup olmadığını kontrol edelim**
+            if (string.IsNullOrWhiteSpace(responseContent))
+            {
+                ModelState.AddModelError("", "Sunucudan geçersiz bir yanıt alındı.");
+                return View(model);
+            }
+
+            var result = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
+
+            // **Eğer result veya result.Roles null ise, güvenli şekilde hata gösterelim**
+            if (result == null || result.Roles == null)
+            {
+                ModelState.AddModelError("", "Giriş işlemi sırasında beklenmeyen bir hata oluştu.");
+                return View(model);
+            }
+
+            // **Token'ı Session'a kaydet**
+            HttpContext.Session.SetString("Token", result.Token);
+
+            // **Rolleri kontrol edip yönlendirme yap**
+            if (result.Roles.Contains("Admin"))
+                return RedirectToAction("Index", "Admin");
+            if (result.Roles.Contains("Kütüphane Görevlisi"))
+                return RedirectToAction("Index", "Librarian");
+            if (result.Roles.Contains("Kullanıcı"))
+                return RedirectToAction("Index", "User");
+
             return RedirectToAction("Login");
         }
     }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("MySQLConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySQLConnection"))));
+
 // Generic Repository'yi DI container'a ekleme
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
@@ -49,27 +51,31 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
     };
 });
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Swagger JWT Tanýmlamasý ve Güvenlik Ayarý
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Lütfen 'Bearer <TOKEN>' formatýnda giriniz",
         Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",  // BU SATIR OTOmatik Bearer önekini ekler
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Tokenýnýzý girin"
     });
 
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
@@ -80,6 +86,7 @@ builder.Services.AddSwaggerGen(c =>
 
 
 var app = builder.Build();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -87,10 +94,9 @@ using (var scope = app.Services.CreateScope())
 
     // Veritabanýný oluþtur
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
-
     dbContext.Database.EnsureCreated();
-
 }
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

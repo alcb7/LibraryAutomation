@@ -75,9 +75,14 @@ namespace LibraryAutomation.API.Controllers
 
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    var roles = await _userManager.GetRolesAsync(user);
+                    var roles = await _userManager.GetRolesAsync(user); 
                     var token = GenerateJwtToken(user, roles);
-                    return Ok(new { Token = token });
+
+                    return Ok(new
+                    {
+                        Token = token,
+                        Roles = roles 
+                    });
                 }
 
                 return Unauthorized();
@@ -85,6 +90,7 @@ namespace LibraryAutomation.API.Controllers
 
             return BadRequest(ModelState);
         }
+
 
         private string GenerateJwtToken(AppUser user, IList<string> roles)
         {
