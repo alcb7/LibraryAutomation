@@ -11,7 +11,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Auth/AccessDenied";
+        options.AccessDeniedPath = "/Account/AccessDenied";
     })
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {

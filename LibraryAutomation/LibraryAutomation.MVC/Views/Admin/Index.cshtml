@@ -25,7 +25,7 @@
             <th>Email</th>
             <th>Rol</th>
             <th>Onay Durumu</th>
-            <th>İşlem</th>
+            <th>İşlemler</th> <!-- 🔹 "İşlem" yerine çoğul kullandık çünkü birden fazla buton var -->
         </tr>
     </thead>
     <tbody>
@@ -39,7 +39,17 @@
                     <td>@user.FirstName</td>
                     <td>@user.LastName</td>
                     <td>@user.Email</td>
-                    <td>@string.Join(", ", user.Roles)</td>
+                    <td>
+                        <form asp-action="UpdateUserRole" asp-controller="Admin" method="post" class="d-inline">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <select name="newRole" class="form-control d-inline w-auto">
+                                <option value="Admin" selected="@(user.Roles.Contains("Admin") ? "selected" : null)">Admin</option>
+                                <option value="Kütüphane Görevlisi" selected="@(user.Roles.Contains("Kütüphane Görevlisi") ? "selected" : null)">Kütüphane Görevlisi</option>
+                                <option value="Kullanıcı" selected="@(user.Roles.Contains("Kullanıcı") ? "selected" : null)">Kullanıcı</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Güncelle</button>
+                        </form>
+                    </td>
                     <td>
                         @if (user.IsApproved)
                         {
@@ -51,13 +61,20 @@
                         }
                     </td>
                     <td>
-                        @if (!user.IsApproved)
-                        {
-                            <form method="post" asp-action="ApproveUser" asp-controller="Admin">
+                        <div class="d-flex gap-2">
+                            @if (!user.IsApproved)
+                            {
+                                <form method="post" asp-action="ApproveUser" asp-controller="Admin">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm">Onayla</button>
+                                </form>
+                            }
+
+                            <form method="post" asp-action="DeleteUser" asp-controller="Admin" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?');">
                                 <input type="hidden" name="userId" value="@user.Id" />
-                                <button type="submit" class="btn btn-success btn-sm">Onayla</button>
+                                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                             </form>
-                        }
+                        </div>
                     </td>
                 </tr>
                 count++;
@@ -71,3 +88,5 @@
         }
     </tbody>
 </table>
+
+<a asp-action="CreateUser" asp-controller="Admin" class="btn btn-primary mb-3">Yeni Kullanıcı Ekle</a>

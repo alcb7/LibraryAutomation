@@ -24,7 +24,6 @@ namespace LibraryAutomation.MVC.Controllers
         {
             return View();
         }
-
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -34,7 +33,7 @@ namespace LibraryAutomation.MVC.Controllers
             var jsonContent = JsonConvert.SerializeObject(model);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("Account/login", content);
+            var response = await _httpClient.PostAsync("account/login", content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -43,27 +42,22 @@ namespace LibraryAutomation.MVC.Controllers
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
 
-            // **Gelen yanıtın boş olup olmadığını kontrol edelim**
-            if (string.IsNullOrWhiteSpace(responseContent))
+            if (result == null || string.IsNullOrWhiteSpace(result.Token))
             {
                 ModelState.AddModelError("", "Sunucudan geçersiz bir yanıt alındı.");
                 return View(model);
             }
 
-            var result = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
+            // ✅ **Token'i doğrudan kaydet (Etrafında hiçbir şey olmadan!)**
+            string pureToken = result.Token.Trim();
+            HttpContext.Session.SetString("Token", pureToken);
 
-            // **Eğer result veya result.Roles null ise, güvenli şekilde hata gösterelim**
-            if (result == null || result.Roles == null)
-            {
-                ModelState.AddModelError("", "Giriş işlemi sırasında beklenmeyen bir hata oluştu.");
-                return View(model);
-            }
+            // ✅ **Konsola sadece token'i yazdır**
+            Console.WriteLine(pureToken);
 
-            // **Token'ı Session'a kaydet**
-            HttpContext.Session.SetString("Token", result.Token);
-
-            // **Rolleri kontrol edip yönlendirme yap**
+            // ✅ **Rollere göre yönlendirme yap**
             if (result.Roles.Contains("Admin"))
                 return RedirectToAction("Index", "Admin");
             if (result.Roles.Contains("Kütüphane Görevlisi"))
@@ -73,6 +67,38 @@ namespace LibraryAutomation.MVC.Controllers
 
             return RedirectToAction("Login");
         }
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var jsonContent = JsonConvert.SerializeObject(model);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("Account/register", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError("", "Kayıt sırasında bir hata oluştu.");
+                return View(model);
+            }
+
+            return RedirectToAction("Login"); // ✅ Kayıt başarılıysa login sayfasına yönlendir
+        }
     }
 
+
+
+
+
+
+
+
 }
+
