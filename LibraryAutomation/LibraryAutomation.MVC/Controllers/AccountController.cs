@@ -17,7 +17,7 @@ namespace LibraryAutomation.MVC.Controllers
         public AccountController(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://localhost:7009/api/"); // API URL
+            _httpClient.BaseAddress = new Uri("https://api.digigokali.com.tr/api/"); // API URL
         }
 
         public IActionResult Login()

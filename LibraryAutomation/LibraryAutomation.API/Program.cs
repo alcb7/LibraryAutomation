@@ -16,9 +16,10 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("MySQLConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySQLConnection"))));
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.EnableRetryOnFailure()));
 
 // Generic Repository'yi DI container'a ekleme
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -52,6 +53,17 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
         RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
     };
+});
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        policy =>
+        {
+            policy.WithOrigins("https://www.digigokali.com.tr") 
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        });
 });
 
 builder.Services.AddControllers();
@@ -97,6 +109,7 @@ using (var scope = app.Services.CreateScope())
 
     // Veritabanýný oluþtur
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
+
     dbContext.Database.EnsureCreated();
 }
 
@@ -108,7 +121,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowSpecificOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

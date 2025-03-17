@@ -45,7 +45,7 @@ builder.Services.AddHttpContextAccessor();
 // ✅ API ile HTTP İletişimi için HttpClient ekleyelim
 builder.Services.AddHttpClient("LibraryApi", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7009/api/"); // API'nin base URL'si
+    client.BaseAddress = new Uri("https://api.digigokali.com.tr/api/"); // API'nin base URL'si
 });
 
 var app = builder.Build();
