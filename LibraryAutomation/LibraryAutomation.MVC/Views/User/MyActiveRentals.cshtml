@@ -26,9 +26,10 @@
                     <td>@rental.DueDate?.ToShortDateString()</td>
                     <td>
                         <form method="post" asp-action="ReturnBook" asp-controller="User">
-                            <input type="hidden" name="Id" value="@rental.Id" />
+                            <input type="hidden" name="rentalId" value="@rental.RentalId" />
                             <button type="submit" class="btn btn-danger btn-sm">İade Et</button>
                         </form>
+                        <p>Rental ID: @rental.RentalId</p> <!-- Debug için gösterelim -->
                     </td>
                 </tr>
             }
@@ -41,5 +42,3 @@
         }
     </tbody>
 </table>
-
-<a asp-action="MyPastRentals" asp-controller="User" class="btn btn-secondary">Geçmiş Kiralamalar</a>

@@ -69,12 +69,12 @@ namespace LibraryAutomation.MVC.Controllers
         }
 
         // 📌 3️⃣ Kullanıcının Kiraladığı Kitapları Listele
-        
+
 
         [HttpPost]
-        public async Task<IActionResult> ReturnBook([FromForm] int Id) 
+        public async Task<IActionResult> ReturnBook(int rentalId)
         {
-            Console.WriteLine($"📌 MVC Controller'a gelen Id: {Id}");
+            Console.WriteLine($"📌 MVC'den Gelen Rental ID: {rentalId}"); // Debug için
 
             var client = _httpClientFactory.CreateClient("LibraryApi");
             var token = HttpContext.Session.GetString("Token");
@@ -85,7 +85,7 @@ namespace LibraryAutomation.MVC.Controllers
             }
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await client.PostAsync($"user/return-book/{Id}", null);
+            var response = await client.PostAsync($"user/return-book/{rentalId}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -96,8 +96,9 @@ namespace LibraryAutomation.MVC.Controllers
                 TempData["Success"] = "Kitap başarıyla iade edildi!";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("MyActiveRentals");
         }
+
         [HttpGet]
         public async Task<IActionResult> MyRentals()
         {
@@ -121,8 +122,6 @@ namespace LibraryAutomation.MVC.Controllers
             var rentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
             return View(rentals);
         }
-        [HttpGet]
-
         public async Task<IActionResult> MyActiveRentals()
         {
             var client = _httpClientFactory.CreateClient("LibraryApi");
@@ -136,15 +135,26 @@ namespace LibraryAutomation.MVC.Controllers
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var response = await client.GetAsync("user/my-active-rentals");
-            var activeRentals = new List<RentalViewModel>();
 
             if (response.IsSuccessStatusCode)
             {
-                activeRentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"📌 Gelen JSON Verisi: {jsonResponse}"); // JSON verisini birebir gösterelim
+
+                var activeRentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
+
+                // 📌 JSON parse edildiğinde RentalId geliyor mu?
+                foreach (var rental in activeRentals)
+                {
+                    Console.WriteLine($"📌 (MVC) Gelen Rental ID: {rental.RentalId}, Book Title: {rental.BookTitle}");
+                }
+
+                return View(activeRentals);
             }
 
-            return View(activeRentals);
+            return View(new List<RentalViewModel>());
         }
+
         [HttpGet]
 
         public async Task<IActionResult> MyPastRentals()

@@ -44,15 +44,24 @@ namespace LibraryAutomation.DAL.Repositories
         }
         public async Task<List<Rental>> GetActiveRentalsByUserEmailAsync(string userEmail)
         {
-            var user = await _context.Set<AppUser>().FirstOrDefaultAsync(u => u.Email == userEmail);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
 
             if (user == null)
                 return new List<Rental>(); // Kullanıcı yoksa boş liste döndür
 
-            return await _context.Set<Rental>()
+            var rentals = await _context.Rentals
                 .Where(r => r.UserId == user.Id && r.ReturnDate == null)
-                .Include(r => r.Book) // Kitap bilgilerini çekelim
+                .Include(r => r.Book) // Kitap bilgilerini tam yükle
+                .Include(r => r.User) // Kullanıcı bilgilerini de al
                 .ToListAsync();
+
+            // 📌 Log ile kontrol edelim
+            foreach (var rental in rentals)
+            {
+                Console.WriteLine($"📌 (Repository) Rental ID: {rental.Id}, Book ID: {rental.BookId}, User ID: {rental.UserId}");
+            }
+
+            return rentals;
         }
 
         public async Task<List<Rental>> GetPastRentalsByUserEmailAsync(string userEmail)

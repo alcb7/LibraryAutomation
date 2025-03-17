@@ -90,48 +90,7 @@ namespace LibraryAutomation.API.Controllers
             return Ok(new { Message = "Kitap başarıyla kiralandı." });
         }
 
-        [HttpGet("my-rentals")]
-        public async Task<IActionResult> GetMyRentals()
-        {
-            // 📌 Kullanıcı ID'sini doğru aldığımızdan emin ol
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { Message = "Giriş yapmanız gerekiyor!" });
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                user = await _userManager.FindByEmailAsync(userId); // 📌 Eğer ID değilse, email olarak ara
-            }
-
-            if (user == null)
-            {
-                return NotFound(new { Message = "Kullanıcı bulunamadı!" });
-            }
-
-            // 📌 Kiralamaları User ve Book bilgileriyle birlikte getir
-            var rentals = await _unitOfWork.Rentals.GetRentalsWithBooksAsync(user.Id);
-
-            if (!rentals.Any())
-            {
-                return Ok(new { Message = "Henüz kiralanmış kitabınız yok." });
-            }
-
-            var rentalDetails = rentals.Select(r => new RentalDetailsDto
-            {
-                Id = r.Id,
-                BookTitle = r.Book?.Title ?? "Bilinmiyor",
-                BorrowerEmail = r.User?.Email ?? "Bilinmiyor",
-                RentalDate = r.RentalDate,
-                DueDate = r.DueDate,
-                ReturnDate = r.ReturnDate
-            }).ToList();
-
-            return Ok(rentalDetails);
-        }
+       
 
 
         [HttpPost("return-book/{rentalId}")]
@@ -185,6 +144,48 @@ namespace LibraryAutomation.API.Controllers
 
             return Ok(new { Message = "Kitap başarıyla iade edildi." });
         }
+        [HttpGet("my-rentals")]
+        public async Task<IActionResult> GetMyRentals()
+        {
+            // 📌 Kullanıcı ID'sini doğru aldığımızdan emin ol
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { Message = "Giriş yapmanız gerekiyor!" });
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(userId); // 📌 Eğer ID değilse, email olarak ara
+            }
+
+            if (user == null)
+            {
+                return NotFound(new { Message = "Kullanıcı bulunamadı!" });
+            }
+
+            // 📌 Kiralamaları User ve Book bilgileriyle birlikte getir
+            var rentals = await _unitOfWork.Rentals.GetRentalsWithBooksAsync(user.Id);
+
+            if (!rentals.Any())
+            {
+                return Ok(new { Message = "Henüz kiralanmış kitabınız yok." });
+            }
+
+            var rentalDetails = rentals.Select(r => new RentalDetailsDto
+            {
+                Id = r.Id,
+                BookTitle = r.Book?.Title ?? "Bilinmiyor",
+                BorrowerEmail = r.User?.Email ?? "Bilinmiyor",
+                RentalDate = r.RentalDate,
+                DueDate = r.DueDate,
+                ReturnDate = r.ReturnDate
+            }).ToList();
+
+            return Ok(rentalDetails);
+        }
         [HttpGet("my-active-rentals")]
         public async Task<IActionResult> GetMyActiveRentals()
         {
@@ -195,15 +196,29 @@ namespace LibraryAutomation.API.Controllers
                 return Unauthorized(new { Message = "Giriş yapmanız gerekiyor!" });
             }
 
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(userId);
+            }
+
+            if (user == null)
+            {
+                return NotFound(new { Message = "Kullanıcı bulunamadı!" });
+            }
+
             var activeRentals = await _unitOfWork.Rentals.GetActiveRentalsByUserEmailAsync(userId);
 
-            var result = activeRentals.Select(r => new
+            // 📌 DTO kullanarak JSON dönüşümünü düzelttik!
+            var result = activeRentals.Select(r => new RentalDto
             {
-                RentalId = r.Id,
+                RentalId = r.Id,  // 📌 RentalId'nin JSON’a doğru geçmesini garanti ediyoruz!
                 BookId = r.BookId,
-                BookTitle = r.Book.Title,
+                BookTitle = r.Book?.Title ?? "Bilinmiyor",
+                BorrowerEmail = r.User?.Email ?? "Bilinmiyor",
                 RentalDate = r.RentalDate,
-                DueDate = r.DueDate
+                DueDate = r.DueDate,
+                ReturnDate = r.ReturnDate
             }).ToList();
 
             return Ok(result);

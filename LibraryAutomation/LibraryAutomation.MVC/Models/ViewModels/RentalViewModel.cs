@@ -2,7 +2,8 @@
 {
     public class RentalViewModel
     {
-        public int Id { get; set; } // Kiralama ID'si
+        public int RentalId { get; set; } // Kiralama ID'si
+
         public string BookTitle { get; set; } // Kitap Adı
         public string BorrowerEmail { get; set; } // Kullanıcı Email
         public DateTime RentalDate { get; set; } // Kiralama Tarihi
