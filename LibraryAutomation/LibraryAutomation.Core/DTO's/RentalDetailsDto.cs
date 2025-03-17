@@ -8,6 +8,7 @@ namespace LibraryAutomation.Core.DTO_s
 {
     public class RentalDetailsDto
     {
+        public int Id { get; set; }
         public string BookTitle { get; set; }
         public string BorrowerEmail { get; set; }
         public DateTime RentalDate { get; set; }

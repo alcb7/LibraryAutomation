@@ -42,5 +42,30 @@ namespace LibraryAutomation.DAL.Repositories
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
         }
+        public async Task<List<Rental>> GetActiveRentalsByUserEmailAsync(string userEmail)
+        {
+            var user = await _context.Set<AppUser>().FirstOrDefaultAsync(u => u.Email == userEmail);
+
+            if (user == null)
+                return new List<Rental>(); // Kullanıcı yoksa boş liste döndür
+
+            return await _context.Set<Rental>()
+                .Where(r => r.UserId == user.Id && r.ReturnDate == null)
+                .Include(r => r.Book) // Kitap bilgilerini çekelim
+                .ToListAsync();
+        }
+
+        public async Task<List<Rental>> GetPastRentalsByUserEmailAsync(string userEmail)
+        {
+            var user = await _context.Set<AppUser>().FirstOrDefaultAsync(u => u.Email == userEmail);
+
+            if (user == null)
+                return new List<Rental>(); // Kullanıcı yoksa boş liste döndür
+
+            return await _context.Set<Rental>()
+                .Where(r => r.UserId == user.Id && r.ReturnDate != null)
+                .Include(r => r.Book)
+                .ToListAsync();
+        }
     }
 }

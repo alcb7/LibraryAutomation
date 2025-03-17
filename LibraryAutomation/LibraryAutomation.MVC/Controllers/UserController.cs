@@ -94,7 +94,7 @@ namespace LibraryAutomation.MVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ReturnBook([FromForm] int Id) // rentalId yerine Id kullan
+        public async Task<IActionResult> ReturnBook([FromForm] int Id) 
         {
             Console.WriteLine($"📌 MVC Controller'a gelen Id: {Id}");
 
@@ -120,6 +120,55 @@ namespace LibraryAutomation.MVC.Controllers
 
             return RedirectToAction("MyRentals");
         }
+        [HttpGet]
+
+        public async Task<IActionResult> MyActiveRentals()
+        {
+            var client = _httpClientFactory.CreateClient("LibraryApi");
+            var token = HttpContext.Session.GetString("Token");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.GetAsync("user/my-active-rentals");
+            var activeRentals = new List<RentalViewModel>();
+
+            if (response.IsSuccessStatusCode)
+            {
+                activeRentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
+            }
+
+            return View(activeRentals);
+        }
+        [HttpGet]
+
+        public async Task<IActionResult> MyPastRentals()
+        {
+            var client = _httpClientFactory.CreateClient("LibraryApi");
+            var token = HttpContext.Session.GetString("Token");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.GetAsync("user/my-past-rentals");
+            var pastRentals = new List<RentalViewModel>();
+
+            if (response.IsSuccessStatusCode)
+            {
+                pastRentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
+            }
+
+            return View(pastRentals);
+        }
+
 
     }
 }

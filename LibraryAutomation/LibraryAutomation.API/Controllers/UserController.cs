@@ -122,6 +122,7 @@ namespace LibraryAutomation.API.Controllers
 
             var rentalDetails = rentals.Select(r => new RentalDetailsDto
             {
+                Id = r.Id,
                 BookTitle = r.Book?.Title ?? "Bilinmiyor",
                 BorrowerEmail = r.User?.Email ?? "Bilinmiyor",
                 RentalDate = r.RentalDate,
@@ -183,6 +184,53 @@ namespace LibraryAutomation.API.Controllers
             await _unitOfWork.SaveAsync();
 
             return Ok(new { Message = "Kitap başarıyla iade edildi." });
+        }
+        [HttpGet("my-active-rentals")]
+        public async Task<IActionResult> GetMyActiveRentals()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { Message = "Giriş yapmanız gerekiyor!" });
+            }
+
+            var activeRentals = await _unitOfWork.Rentals.GetActiveRentalsByUserEmailAsync(userId);
+
+            var result = activeRentals.Select(r => new
+            {
+                RentalId = r.Id,
+                BookId = r.BookId,
+                BookTitle = r.Book.Title,
+                RentalDate = r.RentalDate,
+                DueDate = r.DueDate
+            }).ToList();
+
+            return Ok(result);
+        }
+        [HttpGet("my-past-rentals")]
+        public async Task<IActionResult> GetMyPastRentals()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { Message = "Giriş yapmanız gerekiyor!" });
+            }
+
+            var pastRentals = await _unitOfWork.Rentals.GetPastRentalsByUserEmailAsync(userId);
+
+            var result = pastRentals.Select(r => new
+            {
+                RentalId = r.Id,
+                BookId = r.BookId,
+                BookTitle = r.Book.Title,
+                RentalDate = r.RentalDate,
+                DueDate = r.DueDate,
+                ReturnDate = r.ReturnDate
+            }).ToList();
+
+            return Ok(result);
         }
     }
 }

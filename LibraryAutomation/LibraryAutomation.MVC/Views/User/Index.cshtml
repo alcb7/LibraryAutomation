@@ -15,7 +15,7 @@
 {
     <div class="alert alert-success">@ViewBag.Success</div>
 }
-
+<a asp-action="Logout" asp-controller="Account" class="btn btn-danger">Çıkış Yap</a>
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -62,4 +62,5 @@
         }
     </tbody>
 </table>
-<a asp-action="MyRentals" asp-controller="User" class="btn btn-info">Kiraladığım Kitaplar</a>
+<a asp-action="MyActiveRentals" asp-controller="User" class="btn btn-info">Bende Olan Kitaplar</a>
+<a asp-action="MyPastRentals" asp-controller="User" class="btn btn-secondary">Geçmiş Kiralamalar</a>

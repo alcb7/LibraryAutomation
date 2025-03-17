@@ -1,0 +1,45 @@
+﻿@model List<LibraryAutomation.MVC.Models.ViewModels.RentalViewModel>
+
+@{
+    ViewData["Title"] = "Şu Anda Bende Olan Kitaplar";
+}
+
+<h2>Şu Anda Bende Olan Kitaplar</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Kitap Adı</th>
+            <th>Kiralama Tarihi</th>
+            <th>Son Teslim Tarihi</th>
+            <th>İade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            @foreach (var rental in Model)
+            {
+                <tr>
+                    <td>@rental.BookTitle</td>
+                    <td>@rental.RentalDate.ToShortDateString()</td>
+                    <td>@rental.DueDate?.ToShortDateString()</td>
+                    <td>
+                        <form method="post" asp-action="ReturnBook" asp-controller="User">
+                            <input type="hidden" name="Id" value="@rental.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">İade Et</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center">Şu anda bende bulunan kitap yok.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="MyPastRentals" asp-controller="User" class="btn btn-secondary">Geçmiş Kiralamalar</a>

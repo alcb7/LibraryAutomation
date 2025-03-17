@@ -13,5 +13,7 @@ namespace LibraryAutomation.DAL.Interfaces
         Task<List<Rental>> GetRentalsByUserIdAsync(string userId);
         Task<List<Rental>> GetRentalHistoryByBookIdAsync(int bookId);
         Task<List<Rental>> GetRentalsWithBooksAsync(string userId);
+        Task<List<Rental>> GetActiveRentalsByUserEmailAsync(string userEmail);
+        Task<List<Rental>> GetPastRentalsByUserEmailAsync(string userEmail);
     }
 }
