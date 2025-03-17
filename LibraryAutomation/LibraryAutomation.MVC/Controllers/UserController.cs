@@ -69,29 +69,7 @@ namespace LibraryAutomation.MVC.Controllers
         }
 
         // 📌 3️⃣ Kullanıcının Kiraladığı Kitapları Listele
-        [HttpGet]
-        public async Task<IActionResult> MyRentals()
-        {
-            var client = _httpClientFactory.CreateClient("LibraryApi");
-            var token = HttpContext.Session.GetString("Token");
-
-            if (string.IsNullOrEmpty(token))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await client.GetAsync("user/my-rentals");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                TempData["Error"] = "Kiraladığınız kitaplar yüklenemedi.";
-                return View(new List<RentalViewModel>());
-            }
-
-            var rentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
-            return View(rentals);
-        }
+        
 
         [HttpPost]
         public async Task<IActionResult> ReturnBook([FromForm] int Id) 
@@ -118,7 +96,30 @@ namespace LibraryAutomation.MVC.Controllers
                 TempData["Success"] = "Kitap başarıyla iade edildi!";
             }
 
-            return RedirectToAction("MyRentals");
+            return RedirectToAction("Index");
+        }
+        [HttpGet]
+        public async Task<IActionResult> MyRentals()
+        {
+            var client = _httpClientFactory.CreateClient("LibraryApi");
+            var token = HttpContext.Session.GetString("Token");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await client.GetAsync("user/my-rentals");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "Kiraladığınız kitaplar yüklenemedi.";
+                return View(new List<RentalViewModel>());
+            }
+
+            var rentals = await response.Content.ReadFromJsonAsync<List<RentalViewModel>>();
+            return View(rentals);
         }
         [HttpGet]
 
