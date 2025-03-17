@@ -23,12 +23,20 @@
                 <td>@rental.RentalDate</td>
                 <td>@rental.DueDate</td>
                 <td>
-                    <form method="post" asp-action="ReturnBook" asp-controller="User">
-                        <input type="hidden" name="rentalId" value="@rental.Id" />
-                        <button type="submit" class="btn btn-danger btn-sm">İade Et</button>
+                    <form id="returnForm-@rental.Id" method="post" asp-action="ReturnBook" asp-controller="User">
+                        <input type="hidden" name="Id" value="@rental.Id" />
+                        <button type="button" onclick="submitForm(@rental.Id)" class="btn btn-danger btn-sm">İade Et</button>
                     </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+<script>
+    function submitForm(rentalId) {
+        var form = document.getElementById('returnForm-' + rentalId);
+        var inputId = form.querySelector('input[name="Id"]');
+        console.log("Gönderilen Id:", inputId.value); // Id değerini konsola yazdır
+        form.submit();
+    }
+</script>

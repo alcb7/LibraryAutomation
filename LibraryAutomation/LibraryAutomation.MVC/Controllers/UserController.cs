@@ -93,10 +93,11 @@ namespace LibraryAutomation.MVC.Controllers
             return View(rentals);
         }
 
-        // 📌 4️⃣ Kiralanan Kitabı İade Etme
         [HttpPost]
-        public async Task<IActionResult> ReturnBook(int rentalId)
+        public async Task<IActionResult> ReturnBook([FromForm] int Id) // rentalId yerine Id kullan
         {
+            Console.WriteLine($"📌 MVC Controller'a gelen Id: {Id}");
+
             var client = _httpClientFactory.CreateClient("LibraryApi");
             var token = HttpContext.Session.GetString("Token");
 
@@ -106,7 +107,7 @@ namespace LibraryAutomation.MVC.Controllers
             }
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await client.PostAsync($"user/return-book/{rentalId}", null);
+            var response = await client.PostAsync($"user/return-book/{Id}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -119,6 +120,7 @@ namespace LibraryAutomation.MVC.Controllers
 
             return RedirectToAction("MyRentals");
         }
+
     }
 }
 

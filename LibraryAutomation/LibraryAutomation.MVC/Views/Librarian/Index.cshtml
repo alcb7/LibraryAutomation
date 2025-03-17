@@ -5,102 +5,230 @@
     ViewData["Title"] = "Kütüphane Yönetimi";
 }
 
-<h2>Kütüphane Yönetimi</h2>
+<div class="librarian-dashboard-container">
+    <!-- Başlık -->
+    <h1 class="dashboard-title">Kütüphane Yönetimi</h1>
+    <a asp-action="Logout" asp-controller="Account" class="btn btn-danger">Çıkış Yap</a>
+   
+    <!-- Hata ve Başarı Mesajları -->
+    @if (!string.IsNullOrEmpty(ViewBag.Error))
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
 
-@if (!string.IsNullOrEmpty(ViewBag.Error))
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-}
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success">@ViewBag.Success</div>
+    }
 
-@if (ViewBag.Success != null)
-{
-    <div class="alert alert-success">@ViewBag.Success</div>
-}
-
-<!-- 📌 Kitap Listesi -->
-<h3>Kitaplar</h3>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Kitap Adı</th>
-            <th>Yazar</th>
-            <th>Yayın Yılı</th>
-            <th>Durum</th>
-            <th>İşlemler</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Books != null && Model.Books.Any())
-        {
-            int count = 1;
-            @foreach (var book in Model.Books)
-            {
+    <!-- 📌 Kitap Listesi -->
+    <div class="section">
+        <h3 class="section-title">Kitaplar</h3>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
                 <tr>
-                    <td>@count</td>
-                    <td>@book.Title</td>
-                    <td>@book.Author</td>
-                    <td>@(book.PublicationYear?.ToString() ?? "Bilinmiyor")</td>
-                    <td>@book.Status</td>
-                    <td>
-                        <form method="post" asp-action="DeleteBook" asp-controller="Librarian" onsubmit="return confirm('Bu kitabı silmek istediğinize emin misiniz?');">
-                            <input type="hidden" name="bookId" value="@book.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm">Sil</button>
-                        </form>
-                    </td>
+                    <th>#</th>
+                    <th>Kitap Adı</th>
+                    <th>Yazar</th>
+                    <th>Yayın Yılı</th>
+                    <th>Durum</th>
+                    <th>İşlemler</th>
                 </tr>
-                count++;
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">📌 Henüz kayıtlı kitap yok.</td>
-            </tr>
-        }
-    </tbody>
-</table>
-<a asp-action="CreateBook" asp-controller="Librarian" class="btn btn-primary mb-3">📌 Yeni Kitap Ekle</a>
+            </thead>
+            <tbody>
+                @if (Model.Books != null && Model.Books.Any())
+                {
+                    int count = 1;
+                    @foreach (var book in Model.Books)
+                    {
+                        <tr>
+                            <td>@count</td>
+                            <td>@book.Title</td>
+                            <td>@book.Author</td>
+                            <td>@(book.PublicationYear?.ToString() ?? "Bilinmiyor")</td>
+                            <td>@book.Status</td>
+                            <td>
+                                <form method="post" asp-action="DeleteBook" asp-controller="Librarian" onsubmit="return confirm('Bu kitabı silmek istediğinize emin misiniz?');">
+                                    <input type="hidden" name="bookId" value="@book.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                                </form>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">📌 Henüz kayıtlı kitap yok.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <a asp-action="CreateBook" asp-controller="Librarian" class="btn btn-primary">📌 Yeni Kitap Ekle</a>
+    </div>
 
-<hr />
+    <hr />
 
-<!-- 📌 Kullanıcı Listesi -->
-<h3>Kullanıcılar</h3>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Ad</th>
-            <th>Soyad</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>İşlemler</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Users != null && Model.Users.Any())
-        {
-            int count = 1;
-            @foreach (var user in Model.Users)
-            {
+    <!-- 📌 Kullanıcı Listesi -->
+    <div class="section">
+        <h3 class="section-title">Kullanıcılar</h3>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
                 <tr>
-                    <td>@count</td>
-                    <td>@user.FirstName</td>
-                    <td>@user.LastName</td>
-                    <td>@user.Email</td>
-                    <td>@string.Join(", ", user.Roles ?? new List<string>())</td>
-                    <td>
-                        <a asp-action="UserRentals" asp-controller="Librarian" asp-route-userId="@user.Id" class="btn btn-info btn-sm">Kiraladığı Kitaplar</a>
-                    </td>
+                    <th>#</th>
+                    <th>Ad</th>
+                    <th>Soyad</th>
+                    <th>Email</th>
+                    
+                    <th>İşlemler</th>
                 </tr>
-                count++;
+            </thead>
+            <tbody>
+                @if (Model.Users != null && Model.Users.Any())
+                {
+                    int count = 1;
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@count</td>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                <a asp-action="UserRentals" asp-controller="Librarian" asp-route-userId="@user.Id" class="btn btn-info btn-sm">Kiraladığı Kitaplar</a>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">📌 Henüz kayıtlı kullanıcı yok.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Ana Container */
+        .librarian-dashboard-container {
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* Başlık */
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* Bölüm Başlıkları */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tablo Stilleri */
+        .table {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+            .table thead {
+                background-color: #343a40;
+                color: #fff;
             }
+
+            .table th, .table td {
+                vertical-align: middle;
+            }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
         }
-        else
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">📌 Henüz kayıtlı kullanıcı yok.</td>
-            </tr>
+
+        /* Badge Stilleri */
+        .badge {
+            padding: 0.5em 0.75em;
+            font-size: 0.875em;
+            font-weight: 600;
         }
-    </tbody>
-</table>
+
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+
+        .bg-warning {
+            background-color: #ffc107 !important;
+        }
+
+        /* Buton Stilleri */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+            }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+                border-color: #004085;
+            }
+
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+        }
+
+            .btn-info:hover {
+                background-color: #138496;
+                border-color: #117a8b;
+            }
+
+        /* Alert Mesajları */
+        .alert {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+}

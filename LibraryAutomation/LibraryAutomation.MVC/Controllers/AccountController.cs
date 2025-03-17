@@ -89,7 +89,20 @@ namespace LibraryAutomation.MVC.Controllers
                 return View(model);
             }
 
-            return RedirectToAction("Login"); // ✅ Kayıt başarılıysa login sayfasına yönlendir
+            
+            TempData["RegistrationSuccess"] = "Kayıt başarılı! Hesabınızın aktifleştirilmesi için yönetici onayı gerekmektedir.";
+
+            return RedirectToAction("Login"); 
+        }
+        public IActionResult Logout()
+        {
+            // Kullanıcının oturumunu kapat
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Session'da saklanan JWT token'ı temizle
+            HttpContext.Session.Clear();
+
+            return RedirectToAction("Login", "Account");
         }
     }
 

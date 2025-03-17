@@ -1,92 +1,209 @@
 ﻿@model List<LibraryAutomation.MVC.Models.ViewModels.UserViewModel>
 
 @{
-    ViewData["Title"] = "Kullanıcı Listesi";
+    ViewData["Title"] = "Admin Paneli - Kullanıcı Listesi";
 }
 
-<h2>Kullanıcı Listesi</h2>
+<div class="admin-container">
+    <!-- Admin Paneli Başlığı -->
+    <div class="admin-header">
+        <h1 class="admin-title">Admin Paneli</h1>
+        <a asp-action="Logout" asp-controller="Account" class="btn btn-danger">Çıkış Yap</a>
+    </div>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-}
+    <!-- Hata veya Başarı Mesajları -->
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
 
-@if (ViewBag.Success != null)
-{
-    <div class="alert alert-success">@ViewBag.Success</div>
-}
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success">@ViewBag.Success</div>
+    }
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Ad</th>
-            <th>Soyad</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Onay Durumu</th>
-            <th>İşlemler</th> <!-- 🔹 "İşlem" yerine çoğul kullandık çünkü birden fazla buton var -->
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            int count = 1;
-            @foreach (var user in Model)
-            {
+    <!-- Kullanıcı Listesi -->
+    <div class="admin-content">
+        <h2 class="content-title">Kullanıcı Listesi</h2>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
                 <tr>
-                    <td>@count</td>
-                    <td>@user.FirstName</td>
-                    <td>@user.LastName</td>
-                    <td>@user.Email</td>
-                    <td>
-                        <form asp-action="UpdateUserRole" asp-controller="Admin" method="post" class="d-inline">
-                            <input type="hidden" name="userId" value="@user.Id" />
-                            <select name="newRole" class="form-control d-inline w-auto">
-                                <option value="Admin" selected="@(user.Roles.Contains("Admin") ? "selected" : null)">Admin</option>
-                                <option value="Kütüphane Görevlisi" selected="@(user.Roles.Contains("Kütüphane Görevlisi") ? "selected" : null)">Kütüphane Görevlisi</option>
-                                <option value="Kullanıcı" selected="@(user.Roles.Contains("Kullanıcı") ? "selected" : null)">Kullanıcı</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary btn-sm">Güncelle</button>
-                        </form>
-                    </td>
-                    <td>
-                        @if (user.IsApproved)
-                        {
-                            <span class="badge bg-success">Onaylı</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning">Onay Bekliyor</span>
-                        }
-                    </td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            @if (!user.IsApproved)
-                            {
-                                <form method="post" asp-action="ApproveUser" asp-controller="Admin">
-                                    <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-success btn-sm">Onayla</button>
-                                </form>
-                            }
-
-                            <form method="post" asp-action="DeleteUser" asp-controller="Admin" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?');">
-                                <input type="hidden" name="userId" value="@user.Id" />
-                                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
-                            </form>
-                        </div>
-                    </td>
+                    <th>#</th>
+                    <th>Ad</th>
+                    <th>Soyad</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Onay Durumu</th>
+                    <th>İşlemler</th>
                 </tr>
-                count++;
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="7" class="text-center">Henüz kayıtlı kullanıcı yok.</td>
-            </tr>
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int count = 1;
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@count</td>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                <form asp-action="UpdateUserRole" asp-controller="Admin" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <select name="newRole" class="form-control d-inline w-auto">
+                                        <option value="Admin" selected="@(user.Roles.Contains("Admin") ? "selected" : null)">Admin</option>
+                                        <option value="Kütüphane Görevlisi" selected="@(user.Roles.Contains("Kütüphane Görevlisi") ? "selected" : null)">Kütüphane Görevlisi</option>
+                                        <option value="Kullanıcı" selected="@(user.Roles.Contains("Kullanıcı") ? "selected" : null)">Kullanıcı</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">Güncelle</button>
+                                </form>
+                            </td>
+                            <td>
+                                @if (user.IsApproved)
+                                {
+                                    <span class="badge bg-success">Onaylı</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Onay Bekliyor</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @if (!user.IsApproved)
+                                    {
+                                        <form method="post" asp-action="ApproveUser" asp-controller="Admin">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-success btn-sm">Onayla</button>
+                                        </form>
+                                    }
 
-<a asp-action="CreateUser" asp-controller="Admin" class="btn btn-primary mb-3">Yeni Kullanıcı Ekle</a>
+                                    <form method="post" asp-action="DeleteUser" asp-controller="Admin" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?');">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center">Henüz kayıtlı kullanıcı yok.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Yeni Kullanıcı Ekle Butonu -->
+        <a asp-action="CreateUser" asp-controller="Admin" class="btn btn-primary mb-3">Yeni Kullanıcı Ekle</a>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Ana Container */
+        .admin-container {
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* Admin Paneli Başlığı */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* İçerik Başlığı */
+        .content-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #444;
+        }
+
+        /* Tablo Stilleri */
+        .table {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+            .table thead {
+                background-color: #343a40;
+                color: #fff;
+            }
+
+            .table th, .table td {
+                vertical-align: middle;
+            }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Buton Stilleri */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+            }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+            .btn-success:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+            }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+                border-color: #004085;
+            }
+
+        /* Badge Stilleri */
+        .badge {
+            padding: 0.5em 0.75em;
+            font-size: 0.875em;
+            font-weight: 600;
+        }
+
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+
+        .bg-warning {
+            background-color: #ffc107 !important;
+        }
+    </style>
+}
